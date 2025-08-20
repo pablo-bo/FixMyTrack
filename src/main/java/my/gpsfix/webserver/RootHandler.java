@@ -2,12 +2,11 @@ package my.gpsfix.webserver;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
 
 
-public class RootHandler  implements HttpHandler {
+public class RootHandler  extends CommonHandler  {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
@@ -54,12 +53,5 @@ public class RootHandler  implements HttpHandler {
 
     }
 
-    private void sendResponse(HttpExchange exchange, int code, String message) throws IOException {
-        Headers headers = exchange.getResponseHeaders();
-        headers.set("Access-Control-Allow-Origin", "*");
-        exchange.sendResponseHeaders(code, message.length());
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(message.getBytes());
-        }
-    }
+
 }

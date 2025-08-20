@@ -7,7 +7,6 @@ import my.gpsfix.FileTypeDetector.FileType;
 import my.gpsfix.GPXProcessor;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -17,7 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-class UploadHandler implements HttpHandler {
+class UploadHandler extends CommonHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         // Обработка CORS preflight запроса (OPTIONS)
@@ -121,36 +120,4 @@ class UploadHandler implements HttpHandler {
         exchange.getResponseBody().close();
     }
 
-    private void sendResponse(HttpExchange exchange, int code, String message) throws IOException {
-        Headers headers = exchange.getResponseHeaders();
-        headers.set("Access-Control-Allow-Origin", "*");
-        exchange.sendResponseHeaders(code, message.length());
-        try (OutputStream os = exchange.getResponseBody()) {
-            os.write(message.getBytes());
-        }
-    }
-
-    private void sendResponse(HttpExchange exchange, int code, Path pathToFile, String extraFileName) throws IOException {
-        // Устанавливаем CORS заголовки
-        Headers responseHeaders = exchange.getResponseHeaders();
-        responseHeaders.set("Access-Control-Allow-Origin", "*");
-        responseHeaders.set("Content-Type", "application/octet-stream");
-        responseHeaders.set("Content-Disposition", "attachment; filename=\"" + extraFileName + "\"");
-        responseHeaders.set("Content-Length", String.valueOf(Files.size(pathToFile)));
-        responseHeaders.set("X-File-Name", extraFileName);
-
-        exchange.sendResponseHeaders(code, Files.size(pathToFile));
-
-        // Отправляем обработанный файл
-        try (InputStream fis = Files.newInputStream(pathToFile);
-             OutputStream os = exchange.getResponseBody()) {
-
-            byte[] buffer2 = new byte[4096];
-            int bytesRead2;
-
-            while ((bytesRead2 = fis.read(buffer2)) != -1) {
-                os.write(buffer2, 0, bytesRead2);
-            }
-        }
-    }
 }
